@@ -12,6 +12,8 @@ jpgs
 jpg_to_pdf.py
 mangasee123/*
 SigPdf/*
+inputFolder/*
+data/*
 
 # Distribution / packaging
 .Python
