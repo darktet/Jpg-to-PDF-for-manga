@@ -1,0 +1,3 @@
+/home/vash/GitHub/cppvscode/CMakeFiles/rebuild_cache.dir
+/home/vash/GitHub/cppvscode/CMakeFiles/edit_cache.dir
+/home/vash/GitHub/cppvscode/CMakeFiles/dark.dir
