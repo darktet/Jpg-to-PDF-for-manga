@@ -1,133 +1,51 @@
-from fpdf import FPDF
 from PIL import Image
-from PyPDF2 import PdfFileMerger, PdfFileReader
+from PyPDF2 import PdfFileMerger
 import os
 import natsort
-
-imagelist = []
-pdflist = []
-
-folder = "inputFolder"
-folder2 = "data"
-# name = ".pdf"
-pdf = FPDF()
-totalJpgSize = 0
-savedFIleNumber = 0
-merger = PdfFileMerger()
-
-def checkFolder(dir):
-    if not os.path.exists(dir):
-        os.makedirs(dir)
-
-def pdf2(fileNames):
-    for filename in fileNames:
-        merger.append(filename)
-    
-
-for dirpath, dirnames, filenames in os.walk(folder):
-    for filename in [f for f in filenames if f.endswith(".jpg")]:
-        full_path = os.path.join(dirpath, filename)
-        imagelist.append(full_path)
-
-for dirpath, dirnames, filenames in os.walk(folder2):
-    for filename in [f for f in filenames if f.endswith(".pdf")]:
-        full_path = os.path.join(dirpath, filename)
-        pdflist.append(full_path)
-    print(full_path)
-imagelist = natsort.natsorted(imagelist)
-pdflist = natsort.natsorted(pdflist)
+from cachetools import cached, LRUCache
 
 
-def savedFIleNumber():
-    savedFIleNumber += 1
-    return savedFIleNumber
+def folderCheck(*dirName: str):
+    for i in dirName:
+        if not os.path.exists(i):
+            os.makedirs(i)
+    print(f"Directory created. Insert your images in inputDiractory")
 
+@cached(cache=LRUCache(maxsize=2))
+def imageProp(location: str):
+    return Image.open(location).convert('RGB')
 
-def getImageHight():
-    imageHight = 0
-    count = 1
-    for i in range(0, len(imagelist)):
-        im1 = Image.open(imagelist[i])
-        width, height = im1.size
-        if width == 720:
-            imageHight += height
-            count += 1
+def arrangeFiles(dirName):
+    return natsort.natsorted([f"{dirName}/{x}" for x in os.listdir(dirName)])
 
-    return imageHight/count
-
-
-def createNewEmptyImage(hight):
-    dst = Image.new(
-        'RGB', (720, hight))
-    return dst
-
-
-def jpgSave(src):
-    src
-
-
-def trim(im):
-    box = (im.size)
-    im.crop()
-
-
-def addImageToEmptyImage(dst, im, pos):
-    dst.paste(im, pos)
-
+def files(dirNames: str, xPdf: PdfFileMerger):
+    i = ii = 0
+    for file in arrangeFiles(dirNames):
+        ii += 1
+        if imageProp(file).width == 720:
+            print(f"{i} file done")
+            imageProp(file).save(f'{file[:-4]}.pdf', 'PDF')
+            xPdf.append(f'{file[:-4]}.pdf')
+            os.remove(f'{file[:-4]}.pdf')
+            i += 1
+                
+    print(f"\n\n720: {i}", f"\nNot 720: {ii-i}", f'\nTotal: {ii}')
+    # Width == 720 will be convert else not
 
 def main():
-    # tmpver = getImageHight()*2
-    # img = createNewEmptyImage(65499)
-    pos = (0, 0)
-    newImageList = []
-    PILimg = []
-    imgnum = 1
-    # for i in range(0, len(imagelist)):
-    #     im1 = Image.open(imagelist[i])
-    #     width, height = im1.size
-    #     # if imageHight < tmpver:
-    #     if width == 720:
-    #         # newImageList.append(imagelist[i])
-    #         im2 = im1.convert("RGB")
-    #         # pdf.add_page()
-    #         # pdf.image(im2.save("__temp.pdf", 'PDF'), 0, 0, 0, 0, "PDF")
-    #         im2.save(f'data/pdfconvPIL{imgnum}.pdf', 'PDF')
-    #         # PILimg.append(im2)
-    #         print(f'Added {imgnum} {imagelist[i][5:]}')
-    #         imgnum+=1
-            # pdf.add_page()
-            # pdf.image(createNewEmptyImage(height), )
-    # print('Started')
-    # im1.save(f'data/pdfconv.pdf', save_all=True, append_images=PILimg)
-    # pdf.write()
-    # for i in range(0, len(pdflist)):
-    pdf2(pdflist)
-        # print(pdflist[i])
-
-    merger.write("SigPdf/Merged_doc.pdf")
-    print('Done')
-
-    #             addImageToEmptyImage(tmpimg, im1, (0, imageHight))
-    #             imageHight += height
-    #             addImageToEmptyImage(tmpimg, im1, (0, imageHight))
-    #     else:
-    #         if width == 720:
-    #             addImageToEmptyImage(tmpimg, im1, (0, imageHight))
-    #             imageHight += height
-    #             addImageToEmptyImage(tmpimg, im1, (0, imageHight))
-    #         img = createNewEmptyImage(imageHight)
-    #         print(imagelist[i])
-    #         box = (0, 0, 720, imageHight)
-    #         img = tmpimg.crop(box)
-    #         img.save(f'data/testproj{imgnum}.pdf')
-    #         pos = (0, 0)
-    #         imgnum += 1
-    #         imageHight = 0
-    # box = (0, 0, 720, imageHight)
-    # img = tmpimg.crop(box)
-    # img.save(f'data/testproj{imgnum}.pdf', "PDF")
-
-
+    outputDir, inputDir = 'outSigPdf', 'inputDiractory'
+    if os.path.exists(inputDir) and os.path.exists(outputDir):
+        fullPdf = PdfFileMerger()
+        files(inputDir, fullPdf)
+        fullPdf.write(f'{outputDir}/JpgtoPDFConvert.pdf')
+        print(f"Jpg to PDF done check outSigPdf")
+    else: 
+        folderCheck(inputDir, outputDir)
 
 if __name__ == '__main__':
+    import time
+    start = time.perf_counter()
+
     main()
+
+    print("Time Taken: ", time.perf_counter() - start)
