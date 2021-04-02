@@ -11,9 +11,10 @@ jpgs
 .vscode/
 jpg_to_pdf.py
 mangasee123/*
-SigPdf/*
-inputFolder/*
+outSigPdf/*
+inputDiractory/*
 data/*
+index.html
 
 # Distribution / packaging
 .Python
