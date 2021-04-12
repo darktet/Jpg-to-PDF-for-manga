@@ -14,7 +14,12 @@ mangasee123/*
 outSigPdf/*
 inputDiractory/*
 data/*
+CMakeFiles
 index.html
+loading.py
+*.cmake
+*[C]ache.*
+Makefile
 
 # Distribution / packaging
 .Python
